@@ -1,49 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:provider/provider.dart';
+import 'data_provider.dart';
+import 'pages/home.dart';
+import 'pages/calendar.dart';
+import 'pages/info_horses.dart';
+import 'pages/results.dart';
 
 void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Horse Races',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => DataProvider(),
+      child: MaterialApp(
+        home: MyApp(),
       ),
-      home: MainPage(),
-    );
-  }
+    ),
+  );
 }
 
-class MainPage extends StatefulWidget {
+class MyApp extends StatefulWidget {
   @override
   _MainPageState createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _MainPageState extends State<MyApp> {
   int _selectedIndex = 0;
-  List<dynamic> data = [];
 
   @override
   void initState() {
     super.initState();
-    fetchData();
-  }
-
-  Future<void> fetchData() async {
-    final url = Uri.parse("https://jsonkeeper.com/b/ODADI");
-    final response = await http.get(url);
-    final Map<String, dynamic> decoded = jsonDecode(response.body);
-    final List<dynamic> horses = decoded['horses'] ?? [];
-    setState(() {
-      data = horses;
-    });
+    final dataProvider = Provider.of<DataProvider>(context, listen: false);
+    dataProvider.fetchData();
   }
 
   void _onItemTapped(int index) {
@@ -54,8 +40,16 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+    final dataProvider = Provider.of<DataProvider>(context);
+    // Mostra caricamento finché i dati non sono pronti
+    if (!dataProvider.isLoaded) {
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final List<Widget> _pages = [
-      HomePage(data: data),
+      HomePage(),
       CalendarPage(),
       ResultsPage(),
       HorseDetailsPage(),
@@ -71,92 +65,12 @@ class _MainPageState extends State<MainPage> {
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: "Calendar",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: "Results",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.info),
-            label: "Horse",
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: "Calendar"),
+          BottomNavigationBarItem(icon: Icon(Icons.list), label: "Results"),
+          BottomNavigationBarItem(icon: Icon(Icons.info), label: "Horse"),
         ],
       ),
     );
-  }
-}
-
-/// < PAGINE >
-
-class HomePage extends StatelessWidget {
-  final List<dynamic> data;
-
-  const HomePage({Key? key, required this.data}) : super(key:key);
-
-  @override
-  Widget build(BuildContext context) {
-    if (data.isEmpty) {
-      return Center(child: CircularProgressIndicator());
-    }
-    return ListView.builder(
-      itemCount: data.length,
-      itemBuilder: (context, index) {
-        final horse = data[index];
-        return ListTile(
-          title: Text(horse["name"] ?? "N/A"),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: horse["alive"] == false
-                ? [
-              Text("Owner: ${horse["owner"] ?? "Unknown"}"),
-              Text("Sex: ${horse["sex"] ?? "N/A"}"),
-              Text("Died: ${horse["age"]?.toString() ?? "N/A"}"),
-              Text("G1 Wins: ${horse["wins_G1"] ?? "N/A"}"),
-              Text("G2 Wins: ${horse["wins_G2"] ?? "N/A"}"),
-              Text("G3 Wins: ${horse["wins_G3"] ?? "N/A"}"),
-            ]
-                : [
-              Text("Owner: ${horse["owner"] ?? "Unknown"}"),
-              Text("Sex: ${horse["sex"] ?? "N/A"}"),
-              Text("Age: ${horse["age"]?.toString() ?? "N/A"}"),
-              Text("G1 Wins: ${horse["wins_G1"] ?? "N/A"}"),
-              Text("G2 Wins: ${horse["wins_G2"] ?? "N/A"}"),
-              Text("G3 Wins: ${horse["wins_G3"] ?? "N/A"}"),
-            ],
-          ),
-          isThreeLine: true,
-        );
-
-
-      },
-    );
-  }
-}
-
-class CalendarPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text("Calendar Page"));
-  }
-}
-
-class ResultsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text("Results Page"));
-  }
-}
-
-class HorseDetailsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text("Horse Details Page"));
   }
 }
