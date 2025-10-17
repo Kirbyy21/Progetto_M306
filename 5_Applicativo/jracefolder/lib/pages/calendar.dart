@@ -51,7 +51,7 @@ class _CalendarPageState  extends State<CalendarPage> {
         outsideDaysVisible: false,
 
         todayDecoration: BoxDecoration(
-          color: Colors.lightBlueAccent,
+          color: Colors.blueAccent,
           shape: BoxShape.rectangle,
           borderRadius: BorderRadius.circular(8),
         ),

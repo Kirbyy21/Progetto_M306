@@ -4,13 +4,14 @@ import 'data_provider.dart';
 import 'pages/home.dart';
 import 'pages/calendar.dart';
 import 'pages/info_horses.dart';
-import 'pages/results.dart';
+import 'pages/race.dart';
 
 void main() {
   runApp(
     ChangeNotifierProvider(
       create: (_) => DataProvider(),
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         home: MyApp(),
       ),
     ),
@@ -51,7 +52,7 @@ class _MainPageState extends State<MyApp> {
     final List<Widget> _pages = [
       HomePage(),
       CalendarPage(),
-      ResultsPage(),
+      RacePage(),
       HorseDetailsPage(),
     ];
 
@@ -67,8 +68,8 @@ class _MainPageState extends State<MyApp> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
           BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: "Calendar"),
-          BottomNavigationBarItem(icon: Icon(Icons.list), label: "Results"),
-          BottomNavigationBarItem(icon: Icon(Icons.info), label: "Horse"),
+          BottomNavigationBarItem(icon: Icon(Icons.list), label: "Races"),
+          BottomNavigationBarItem(icon: Icon(Icons.info), label: "Horses"),
         ],
       ),
     );

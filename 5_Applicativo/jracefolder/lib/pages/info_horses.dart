@@ -26,6 +26,7 @@ class HorseDetailsPage extends StatelessWidget {
               Text("G1 Wins: ${horse["wins_G1"] ?? "N/A"}"),
               Text("G2 Wins: ${horse["wins_G2"] ?? "N/A"}"),
               Text("G3 Wins: ${horse["wins_G3"] ?? "N/A"}"),
+              Image.asset('images/${horse["image"] ?? "default.png"}'),
             ]
                 : [
               Text("Owner: ${horse["owner"] ?? "Unknown"}"),
@@ -34,6 +35,7 @@ class HorseDetailsPage extends StatelessWidget {
               Text("G1 Wins: ${horse["wins_G1"] ?? "N/A"}"),
               Text("G2 Wins: ${horse["wins_G2"] ?? "N/A"}"),
               Text("G3 Wins: ${horse["wins_G3"] ?? "N/A"}"),
+              Image.asset('images/${horse["image"] ?? "default.png"}'),
             ],
           ),
           isThreeLine: true,
