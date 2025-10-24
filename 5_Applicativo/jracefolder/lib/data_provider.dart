@@ -10,7 +10,7 @@ class DataProvider extends ChangeNotifier {
   bool get isLoaded => horses.isNotEmpty && races.isNotEmpty;
 
   Future<void> fetchData() async {
-    final url = Uri.parse("https://jsonkeeper.com/b/AOSUX");
+    final url = Uri.parse("https://www.jsonkeeper.com/b/2CSEQ");
     final response = await http.get(url);
     final Map<String, dynamic> decoded = jsonDecode(response.body);
     horses = decoded['horses'] ?? [];

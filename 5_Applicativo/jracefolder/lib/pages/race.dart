@@ -46,9 +46,13 @@ class RaceDetailPage extends StatelessWidget {
   final Map<String, dynamic> race;
   @override
   Widget build(BuildContext context) {
-    final data = Provider.of<DataProvider>(context, listen: false).races;
+    final races = Provider.of<DataProvider>(context, listen: false).races;
+    final horses = Provider.of<DataProvider>(context, listen: false).horses;
+    final results = Provider.of<DataProvider>(context, listen: false).results;
 
-    final pastRaces = data.where((item) => item['name'] == race['name']).toList();
+    final pastRaces = races.where((item) => item['name'] == race['name']).toList();
+
+    DateTime today = DateTime.now();
 
     return Scaffold(
       appBar: AppBar(
@@ -69,17 +73,39 @@ class RaceDetailPage extends StatelessWidget {
               ),
             ),
             SizedBox(height: 8),
-            ...pastRaces.map((pastRace) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Date: ${pastRace["date"] ?? "N/A"}"),
-                  Text("Participants: ${pastRace["time"] ?? "N/A"}"),
-                  Divider(),
-                ],
-              ),
-            )).toList(),
+            ...pastRaces.map((pastRace) {
+              if (!DateTime.parse(pastRace["date"]).isBefore(today)) return SizedBox.shrink();
+
+              final final_results = results.where((r) => r["raceId"] == pastRace["id"]).toList();
+
+              final_results.sort((a, b) => a["position"].compareTo(b["position"]));
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Date: ${pastRace["date"]}"),
+                    const Text("Participants:"),
+                    ...final_results.map((res) {
+                      final horse = horses.firstWhere(
+                            (h) => h["id"] == res["horseId"],
+                            orElse: () => null,
+                      );
+                      return Row(
+                          children: [
+                              SizedBox(
+                                width: 120,
+                                child: Text("${res["position"]}. ${horse?["name"] ?? "Unknown"}"),
+                              ),
+                              Text("${res?['time'] ?? "N/A"}"),
+                          ],
+                      );
+                    }),
+                  ],
+                ),
+              );
+            }).toList(),
           ],
         ),
       ),

@@ -5,6 +5,6 @@ import '../data_provider.dart';
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text("Home"));
+    return Center(child: Text("Favorite Horse"));
   }
 }

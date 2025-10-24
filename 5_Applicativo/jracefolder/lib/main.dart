@@ -5,8 +5,13 @@ import 'pages/home.dart';
 import 'pages/calendar.dart';
 import 'pages/info_horses.dart';
 import 'pages/race.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  await Hive.openBox<int>('favorite_horses');
+
   runApp(
     ChangeNotifierProvider(
       create: (_) => DataProvider(),
