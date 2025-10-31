@@ -4,8 +4,14 @@ import 'package:provider/provider.dart';
 import '../data_provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-class HorseDetailsPage extends StatelessWidget {
+class HorseDetailsPage extends StatefulWidget {
+  const HorseDetailsPage({ super.key});
+
   static final Box<int> box = Hive.box<int>('favorite_horses');
+
+  static List<int> getAll() {
+    return box.keys.cast<int>().toList();
+  }
 
   static bool isFavorite(int id) {
     return box.containsKey(id);
@@ -19,9 +25,13 @@ class HorseDetailsPage extends StatelessWidget {
   static void removeHorse(int id) {
     box.delete(id);
   }
-  static List<int> getAll() {
-    return box.keys.cast<int>().toList();
-  }
+
+  @override
+  State<HorseDetailsPage> createState() => _HorsePageSate();
+}
+
+class _HorsePageSate extends State<HorseDetailsPage> {
+  List<dynamic> displayData = [];
 
   @override
   Widget build(BuildContext context) {
@@ -29,22 +39,87 @@ class HorseDetailsPage extends StatelessWidget {
     if (data.isEmpty) {
       return Center(child: CircularProgressIndicator());
     }
-    return ListView.builder(
-      itemCount: data.length,
-      itemBuilder: (context, index) {
-        final horse = data[index];
-        return ListTile(
-          title: Text(horse["name"] ?? "N/A", style: TextStyle(color: isFavorite(horse["id"]) ? Colors.redAccent : Colors.black),),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) => HorseDetailPage(horse: horse),
+    else {
+      data.sort((a, b) {
+        final aFav = HorseDetailsPage.isFavorite(a["id"]);
+        final bFav = HorseDetailsPage.isFavorite(b["id"]);
+
+        if (aFav && !bFav) return -1;
+        if (!aFav && bFav) return 1;
+
+        return a["name"].compareTo(b["name"]);
+      });
+    }
+
+    void _sortData() {
+      setState(() {
+        displayData.sort((a, b) {
+          final aFav = HorseDetailsPage.isFavorite(a["id"]);
+          final bFav = HorseDetailsPage.isFavorite(b["id"]);
+
+          if (aFav && !bFav) return -1;
+          if (!aFav && bFav) return 1;
+
+          return a["name"].compareTo(b["name"]);
+        });
+      });
+    }
+
+    void _filterData(String query) {
+      setState(() {
+        String schQuery = query.toLowerCase();
+        displayData = data.where((horse) => horse["name"].toLowerCase().startsWith(schQuery)).toList();
+        if (displayData.isEmpty) {
+          displayData.add({"name": "No horse found"});
+        }
+        _sortData();
+      });
+    }
+
+    return Scaffold(
+      appBar: AppBar(title: Text("Horses",  style: TextStyle(color: Colors.white),), backgroundColor: Colors.blueAccent,),
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(8),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: "Search a horse...",
+                fillColor: Colors.white,
+                filled: true,
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
-            );
-          }
-        );
-      },
+              onChanged: (value) => _filterData(value),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+                itemCount: (displayData.isNotEmpty ? displayData : data).length,
+                itemBuilder: (context, index) {
+                  final horse = (displayData.isNotEmpty ? displayData : data)[index];
+                return Card(
+                  child: ListTile(
+                      title: Text(horse["name"] ?? "N/A", style: TextStyle(color: HorseDetailsPage.isFavorite(horse["id"]) ? Colors.redAccent : Colors.blue),),
+                      trailing: Icon(Icons.arrow_forward_ios),
+                      onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => HorseDetailPage(horse: horse),
+                        ),
+                      ).then((_) {
+                        setState(() {
+                        });
+                      });
+                    }
+                  ),
+                );
+              }
+            )
+          ),
+        ],
+      ),
     );
   }
 }
@@ -71,7 +146,11 @@ class HorseDetailPage extends StatelessWidget {
             Text("G2 Wins: ${horse["wins_G2"] ?? "N/A"}"),
             Text("G3 Wins: ${horse["wins_G3"] ?? "N/A"}"),
             const SizedBox(height: 16),
-            Image.asset('images/${horse["image"] ?? "default.png"}'),
+            Image.asset('images/${horse["image"] ?? "images/default.png"}',
+            errorBuilder: (context, error, stackTrace) {
+              return Image.asset("images/default.png");
+            }
+              ,),
             LikeButton(
               isLiked: HorseDetailsPage.isFavorite(horse["id"]),
               onTap: (favorite) async {

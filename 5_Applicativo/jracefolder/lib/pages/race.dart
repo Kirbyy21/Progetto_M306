@@ -24,17 +24,19 @@ class RacePage extends StatelessWidget {
       itemCount: filteredRaces.length,
       itemBuilder: (context, index) {
         final race = filteredRaces[index];
-        return ListTile(
-          title: Text(race["name"] ?? "N/A"),
-          subtitle: Text("Location: ${race["location"] ?? "Unknown"}"),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => RaceDetailPage(race: race),
-              ),
-            );
-          },
+        return Card(
+          child: ListTile(
+            title: Text(race["name"] ?? "N/A"),
+            subtitle: Text("Location: ${race["location"] ?? "Unknown"}"),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => RaceDetailPage(race: race),
+                ),
+              );
+            },
+          ),
         );
       },
     );
@@ -49,11 +51,18 @@ class RaceDetailPage extends StatelessWidget {
     final races = Provider.of<DataProvider>(context, listen: false).races;
     final horses = Provider.of<DataProvider>(context, listen: false).horses;
     final results = Provider.of<DataProvider>(context, listen: false).results;
-
-    final pastRaces = races.where((item) => item['name'] == race['name']).toList();
-
     DateTime today = DateTime.now();
+    final pastRaces = races.where((item) => item['name'] == race['name']).toList();
+    final pstRaces = [];
+    for (int i = 0; i < pastRaces.length; i++) {
+      final race = pastRaces[i];
 
+      DateTime date = DateTime.parse(race["date"]);
+      if (date.isAfter(today)) {
+        pstRaces.add(race);
+      }
+    }
+    print(pstRaces);
     return Scaffold(
       appBar: AppBar(
         title: Text(race["name"] ?? "Race Detail"),
@@ -65,8 +74,7 @@ class RaceDetailPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("Location: ${race["location"] ?? "Unknown"}"),
-            Text(
-              "Past Races:",
+            Text(pstRaces.isNotEmpty ? "" : "Past Races:",
               style: TextStyle(
                 fontSize: 14.0,
                 fontWeight: FontWeight.bold,
@@ -76,9 +84,9 @@ class RaceDetailPage extends StatelessWidget {
             ...pastRaces.map((pastRace) {
               if (!DateTime.parse(pastRace["date"]).isBefore(today)) return SizedBox.shrink();
 
-              final final_results = results.where((r) => r["raceId"] == pastRace["id"]).toList();
+              final finalResults = results.where((r) => r["raceId"] == pastRace["id"]).toList();
 
-              final_results.sort((a, b) => a["position"].compareTo(b["position"]));
+              finalResults.sort((a, b) => a["position"].compareTo(b["position"]));
 
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -87,7 +95,7 @@ class RaceDetailPage extends StatelessWidget {
                   children: [
                     Text("Date: ${pastRace["date"]}"),
                     const Text("Participants:"),
-                    ...final_results.map((res) {
+                    ...finalResults.map((res) {
                       final horse = horses.firstWhere(
                             (h) => h["id"] == res["horseId"],
                             orElse: () => null,
@@ -105,7 +113,7 @@ class RaceDetailPage extends StatelessWidget {
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),

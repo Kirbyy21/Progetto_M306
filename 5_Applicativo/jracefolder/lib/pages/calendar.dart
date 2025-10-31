@@ -32,9 +32,9 @@ class _CalendarPageState  extends State<CalendarPage> {
     return map;
   }
 
-  List<dynamic> _getEvents(DateTime day) {
+  /*List<dynamic> _getEvents(DateTime day) {
     return race[DateTime(day.year, day.month, day.day)] ?? [];
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +63,7 @@ class _CalendarPageState  extends State<CalendarPage> {
         markerDecoration: BoxDecoration(
           color: Colors.blue[900],
           shape: BoxShape.circle,
+          border: Border.all(color: Colors.red, width: 4),
         ),
         defaultDecoration: BoxDecoration(
           border: Border.all(
@@ -92,13 +93,43 @@ class _CalendarPageState  extends State<CalendarPage> {
           _selectedDay = selectedDay;
           _focusedDay = focusedDay;
         });
+
+        final dateOnly = DateTime(selectedDay.year, selectedDay.month, selectedDay.day);
+        final events = race[dateOnly] ?? [];
+
+        if (events.isNotEmpty) {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            builder: (context) {
+              return DraggableScrollableSheet(
+                initialChildSize: 0.5,
+                expand: false,
+                builder: (context, scollController) {
+                  return Container(
+                    padding: EdgeInsets.all(16),
+                    child: ListView.builder(
+                      itemCount: events.length,
+                      itemBuilder: (context, index) {
+                        final race_event = events[index];
+                        return Card(
+                          child: ListTile(
+                            title: Text(race_event["name"]),
+                            subtitle: Text(race_event["location"]),
+                          ),
+                        );
+                      }
+                    ),
+                  );
+                }
+              );
+            }
+          );
+        }
       },
       calendarFormat: _calendarFormat,
-      onFormatChanged: (format) {
-        setState(() {
-          _calendarFormat = format;
-        });
-      },
       onPageChanged: (focusedDay) {
         setState(() {
           _focusedDay = focusedDay;
