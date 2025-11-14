@@ -32,26 +32,14 @@ class HorseDetailsPage extends StatefulWidget {
 
 class _HorsePageSate extends State<HorseDetailsPage> {
   List<dynamic> displayData = [];
+  List<dynamic> allData = [];
+  bool start = true;
 
   @override
   Widget build(BuildContext context) {
     final data = Provider.of<DataProvider>(context, listen: false).horses;
-    if (data.isEmpty) {
-      return Center(child: CircularProgressIndicator());
-    }
-    else {
-      data.sort((a, b) {
-        final aFav = HorseDetailsPage.isFavorite(a["id"]);
-        final bFav = HorseDetailsPage.isFavorite(b["id"]);
 
-        if (aFav && !bFav) return -1;
-        if (!aFav && bFav) return 1;
-
-        return a["name"].compareTo(b["name"]);
-      });
-    }
-
-    void _sortData() {
+    void sortData() {
       setState(() {
         displayData.sort((a, b) {
           final aFav = HorseDetailsPage.isFavorite(a["id"]);
@@ -65,19 +53,30 @@ class _HorsePageSate extends State<HorseDetailsPage> {
       });
     }
 
-    void _filterData(String query) {
+    if (data.isEmpty) {
+      return Center(child: CircularProgressIndicator());
+    }
+    else {
+      if (start) {
+        allData = data.toList();
+        displayData = data.toList();
+        start = false;
+      }
+      sortData();
+    }
+
+    void filterData(String query) {
       setState(() {
         String schQuery = query.toLowerCase();
-        displayData = data.where((horse) => horse["name"].toLowerCase().startsWith(schQuery)).toList();
-        if (displayData.isEmpty) {
-          displayData.add({"name": "No horse found"});
+        displayData = allData.where((horse) => horse["name"].toLowerCase().startsWith(schQuery)).toList();
+        if (displayData.isNotEmpty) {
+          sortData();
         }
-        _sortData();
       });
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text("Horses",  style: TextStyle(color: Colors.white),), backgroundColor: Colors.blueAccent,),
+      appBar: AppBar(title: Text("Horses",  style: TextStyle(color: Colors.white),), backgroundColor:  Color(0xFF149109),),
       body: Column(
         children: [
           Padding(
@@ -90,17 +89,25 @@ class _HorsePageSate extends State<HorseDetailsPage> {
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
-              onChanged: (value) => _filterData(value),
+              onChanged: (value) => filterData(value),
             ),
           ),
           Expanded(
-            child: ListView.builder(
-                itemCount: (displayData.isNotEmpty ? displayData : data).length,
+            child: displayData.isEmpty ?
+                const Center(
+                  child: Text(
+                    "No horse found",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                  ),
+                )
+            : ListView.builder(
+                itemCount: displayData.length,
                 itemBuilder: (context, index) {
-                  final horse = (displayData.isNotEmpty ? displayData : data)[index];
-                return Card(
+                  final horse = displayData[index];
+                  return Card(
                   child: ListTile(
-                      title: Text(horse["name"] ?? "N/A", style: TextStyle(color: HorseDetailsPage.isFavorite(horse["id"]) ? Colors.redAccent : Colors.blue),),
+                      title: Text(horse["name"] ?? "N/A", style: TextStyle(color: HorseDetailsPage.isFavorite(horse["id"]) ?
+                      Color(0xFFD50303) :  Color(0xFF000000)),),
                       trailing: Icon(Icons.arrow_forward_ios),
                       onTap: () {
                       Navigator.push(
@@ -126,54 +133,171 @@ class _HorsePageSate extends State<HorseDetailsPage> {
 
 class HorseDetailPage extends StatelessWidget {
   const HorseDetailPage({super.key, required this.horse});
+
+  final Map<String, Color> colorMap = const {
+    'g1': Color(0xFFFFD700),
+    'g2': Color(0xFFC0C0C0),
+    'g3': Color(0xFFCD7F32)
+  };
+
   final Map<String, dynamic> horse;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(horse["name"] ?? "Horse Detail")),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth > 900;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+
+                isWide
+                    ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(
+                          'images/${horse["image"] ?? "default.png"}',
+                          height: 300,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 2,
+                      child: _buildInfoCard(),
+                    )
+                  ],
+                )
+                    : Column(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.asset(
+                        'images/${horse["image"] ?? "default.png"}',
+                        height: 200,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            "images/default.png",
+                            height: 250,
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildInfoCard(),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                Text(
+                  "Wins",
+                  style: TextStyle(
+                    fontSize: isWide ? 26 : 22,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF149109),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                Wrap(
+                  spacing: 24,
+                  runSpacing: 24,
+                  children: [
+                    _statBadge("G1", horse["wins_G1"], "g1"),
+                    _statBadge("G2", horse["wins_G2"], "g2"),
+                    _statBadge("G3", horse["wins_G3"], "g3"),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                Center(
+                  child: LikeButton(
+                    isLiked: HorseDetailsPage.isFavorite(horse["id"]),
+                    onTap: (fav) async {
+                      if (!fav && HorseDetailsPage.box.length >= 10) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("You can have only 10 favorites!")),
+                        );
+                        return fav;
+                      }
+
+                      if (fav) {
+                        HorseDetailsPage.removeHorse(horse["id"]);
+                      } else {
+                        HorseDetailsPage.addHorse(horse["id"]);
+                      }
+                      return !fav;
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+
+    );
+  }
+
+  Widget _buildInfoCard() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Name: ${horse["name"] ?? "N/A"}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(
+              horse["name"] ?? "N/A",
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF149109),
+              ),
+            ),
+            const SizedBox(height: 8),
             Text("Owner: ${horse["owner"] ?? "Unknown"}"),
             Text("Sex: ${horse["sex"] ?? "N/A"}"),
-            Text("Birth date: ${horse["birth_date"]?.toString() ?? "N/A"}"),
+            Text("Birth date: ${horse["birth_date"] ?? "N/A"}"),
             if (horse["alive"] == false)
-              Text("Died: ${horse["death_date"]?.toString() ?? "N/A"} years old"),
-            Text("G1 Wins: ${horse["wins_G1"] ?? "N/A"}"),
-            Text("G2 Wins: ${horse["wins_G2"] ?? "N/A"}"),
-            Text("G3 Wins: ${horse["wins_G3"] ?? "N/A"}"),
-            const SizedBox(height: 16),
-            Image.asset('images/${horse["image"] ?? "images/default.png"}',
-            errorBuilder: (context, error, stackTrace) {
-              return Image.asset("images/default.png");
-            }
-              ,),
-            LikeButton(
-              isLiked: HorseDetailsPage.isFavorite(horse["id"]),
-              onTap: (favorite) async {
-                if (!favorite && HorseDetailsPage.box.length >= 10) {
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("You can have only 10 favorites!")),
-                  );
-                  return favorite;
-                }
-
-                if (favorite) {
-                  HorseDetailsPage.removeHorse(horse["id"]);
-                }
-                else {
-                  HorseDetailsPage.addHorse(horse["id"]);
-                }
-                return !favorite;
-              },
-            ),
+              Text("Died: ${horse["death_date"] ?? "N/A"}"),
           ],
         ),
+      ),
+    );
+  }
+
+
+  Widget _statBadge(String title, dynamic value, String color) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      decoration: BoxDecoration(
+        color: colorMap[color],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Text(title,
+              style:
+              TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          Text("${value ?? 0}", style: TextStyle(color: Colors.white)),
+        ],
       ),
     );
   }

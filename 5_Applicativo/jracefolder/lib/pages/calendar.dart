@@ -42,42 +42,87 @@ class _CalendarPageState  extends State<CalendarPage> {
       return Center(child: CircularProgressIndicator());
     }
     return TableCalendar(
+      startingDayOfWeek: StartingDayOfWeek.monday,
       rowHeight: 75,
       headerStyle: HeaderStyle(
+        titleTextStyle: TextStyle(
+            fontSize: 20,
+            fontWeight:
+            FontWeight.bold,
+            color: Colors.white),
+        decoration: BoxDecoration(
+          color: Color(0xFF149109),
+        ),
         formatButtonVisible: false,
         titleCentered: true,
+        leftChevronIcon: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white,
+          ),
+          padding: EdgeInsets.all(6),
+          child: Icon(
+              Icons.chevron_left,
+              color: Color(0xFF149109),
+              size: 20),
+        ),
+        rightChevronIcon: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white,
+          ),
+          padding: EdgeInsets.all(6),
+          child: Icon(
+              Icons.chevron_right,
+              color: Color(0xFF149109),
+              size: 20),
+        ),
+
       ),
+      daysOfWeekHeight: 40,
+      daysOfWeekStyle: DaysOfWeekStyle(
+        weekdayStyle: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            color: Color(0xFF149109)),
+        weekendStyle: TextStyle(color: Color(0xFFFF3030), fontSize: 18),
+        decoration: BoxDecoration(
+          color: Color(0xFFBCF68C),
+          border: Border.all(color: Color(0xFF149109), width: 1),
+        ),
+      ),
+
       calendarStyle: CalendarStyle(
         outsideDaysVisible: false,
-
+        cellMargin: EdgeInsets.zero,
         todayDecoration: BoxDecoration(
-          color: Colors.blueAccent,
+          color: Color(0xFF149109),
           shape: BoxShape.rectangle,
-          borderRadius: BorderRadius.circular(8),
         ),
         selectedDecoration: BoxDecoration(
-          color: Colors.lightBlue,
+          color: Color(0xFF74B53E),
           shape: BoxShape.rectangle,
-          borderRadius: BorderRadius.circular(8),
         ),
         markerDecoration: BoxDecoration(
-          color: Colors.blue[900],
+            color: Color(0xFF18CC0C),
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.red, width: 4),
+          border: Border.all(color: Color(0xFF149109), width: 4),
         ),
         defaultDecoration: BoxDecoration(
           border: Border.all(
-            color: Colors.lightBlue,
+            color: Color(0xFF149109),
             width: 1,
           ),
-          borderRadius: BorderRadius.circular(8),
+        ),
+        weekendTextStyle: TextStyle(
+          color: Color(0xFFFF3030),
         ),
         weekendDecoration: BoxDecoration(
+          color: Color(0x66FFA5A5),
           border: Border.all(
-            color: Colors.lightBlue,
+            color: Color(0xFF149109),
             width: 1,
           ),
-          borderRadius: BorderRadius.circular(8),
         ),
       ),
       firstDay: DateTime.utc(2015,10,16),

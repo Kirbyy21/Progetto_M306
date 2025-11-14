@@ -6,6 +6,7 @@ import 'pages/calendar.dart';
 import 'pages/info_horses.dart';
 import 'pages/race.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +18,8 @@ void main() async {
       create: (_) => DataProvider(),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
+        title: 'J Race',
+        theme: raceTheme,
         home: MyApp(),
       ),
     ),

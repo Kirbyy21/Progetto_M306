@@ -20,25 +20,35 @@ class RacePage extends StatelessWidget {
     }
 
     final filteredRaces = uniqueRaces.values.toList();
-    return ListView.builder(
-      itemCount: filteredRaces.length,
-      itemBuilder: (context, index) {
-        final race = filteredRaces[index];
-        return Card(
-          child: ListTile(
-            title: Text(race["name"] ?? "N/A"),
-            subtitle: Text("Location: ${race["location"] ?? "Unknown"}"),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => RaceDetailPage(race: race),
-                ),
-              );
-            },
-          ),
-        );
-      },
+    return Scaffold(
+        appBar: AppBar(title: Text("Races",  style: TextStyle(color: Colors.white),), backgroundColor:  Color(0xFF149109),),
+        body: Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                itemCount: filteredRaces.length,
+                itemBuilder: (context, index) {
+                  final race = filteredRaces[index];
+                  return Card(
+                    child: ListTile(
+                      title: Text(race["name"] ?? "N/A"),
+                      subtitle: Text("Location: ${race["location"] ?? "Unknown"}"),
+                      trailing: Icon(Icons.arrow_forward_ios),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => RaceDetailPage(race: race),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            )
+          ],
+        )
     );
   }
 }
@@ -62,14 +72,13 @@ class RaceDetailPage extends StatelessWidget {
         pstRaces.add(race);
       }
     }
-    print(pstRaces);
     return Scaffold(
       appBar: AppBar(
         title: Text(race["name"] ?? "Race Detail"),
         leading: BackButton(),
       ),
-      body: Padding(
-        padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.only(left: 16.0, top: 16.0, right: 16.0, bottom: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -103,7 +112,7 @@ class RaceDetailPage extends StatelessWidget {
                       return Row(
                           children: [
                               SizedBox(
-                                width: 120,
+                                width: 175,
                                 child: Text("${res["position"]}. ${horse?["name"] ?? "Unknown"}"),
                               ),
                               Text("${res?['time'] ?? "N/A"}"),

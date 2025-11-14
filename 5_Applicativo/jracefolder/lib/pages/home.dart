@@ -13,55 +13,88 @@ class HomePage extends StatelessWidget {
     final upRaces = [];
     DateTime today = DateTime.now();
     if (fav.isEmpty) {
-      return Text("No favorite Horses");
+       return Text("No favorite Horses");
     }
-    for (int i = 0; i < horses.length; i++) {
-      final horse = horses[i];
-      if (i == 0) {
-        fhors.add({"name": "Favorite Horses:"});
-      }
-      if (HorseDetailsPage.isFavorite(horse["id"])) {
-        fhors.add(horse);
+    else {
+      for (int i = 0; i < horses.length; i++) {
+        final horse = horses[i];
+        if (i == 0) {
+          fhors.add({"name": "Favorite Horses:"});
+        }
+        if (HorseDetailsPage.isFavorite(horse["id"])) {
+          fhors.add(horse);
+        }
       }
     }
     for (int i = 0; i < races.length; i++) {
       final race = races[i];
       if (i == 0) {
-        upRaces.add({"name": "Upcoming races:"});
+        upRaces.add({"name": "Upcoming races this year:"});
       }
       DateTime date = DateTime.parse(race["date"]);
       if (date.isAfter(today)) {
         upRaces.add(race);
       }
     }
-    return ListView.builder(
-        itemCount: upRaces.length,
-        itemBuilder: (context, index) {
-          final race = upRaces[index];
-          return ListTile(
-            title: Text(race["name"], style: TextStyle(
-                fontWeight: index == 0 ? FontWeight.bold : FontWeight.normal,
-                fontSize: index == 0 ? 18 : 16),),
-            subtitle: Text(index == 0 ? "" : race["date"]),
-          );
-
-        }
+    if (upRaces.length == 1) {
+      upRaces.add({"name": "No races left for this year"});
+    }
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Home", style: TextStyle(color: Colors.white)),
+        backgroundColor: Color(0xFF149109),
+      ),
+      body: Column(
+        children: [
+          // First ListView wrapped with Expanded
+          Expanded(
+            child: Card(
+              child: ListView.builder(
+                itemCount: upRaces.length,
+                itemBuilder: (context, index) {
+                  final race = upRaces[index];
+                  return ListTile(
+                    title: Text(
+                      race["name"],
+                      style: TextStyle(
+                        fontWeight: index == 0 ? FontWeight.bold : FontWeight.normal,
+                        fontSize: index == 0 ? 18 : 16,
+                      ),
+                    ),
+                    subtitle: Text(index == 0 ? "" : race["date"]),
+                  );
+                },
+              ),
+            ),
+          ),
+          // Second ListView wrapped with Expanded
+          Expanded(
+            child: Card(
+              child: ListView.builder(
+                itemCount: fhors.length,
+                itemBuilder: (context, index) {
+                  final horse = fhors[index];
+                  final padding = EdgeInsets.only(
+                    left: 16,
+                    bottom: index == 0 ? 8 : 0,
+                  );
+                  return ListTile(
+                    title: Text(
+                      horse["name"],
+                      style: TextStyle(
+                        fontWeight: index == 0 ? FontWeight.bold : FontWeight.normal,
+                        fontSize: index == 0 ? 18 : 16,
+                      ),
+                    ),
+                    contentPadding: padding,
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
     );
-    /*return ListView.builder(
-        itemCount: fhors.length,
-        itemBuilder: (context, index) {
-          final horse = fhors[index];
-          final padding = EdgeInsets.only(
-            left: 16,
-            bottom: index == 0 ? 8 : 0,
-          );
-          return ListTile(
-            title: Text(horse["name"], style: TextStyle(
-              fontWeight: index == 0 ? FontWeight.bold : FontWeight.normal,
-              fontSize: index == 0 ? 18 : 16),),
-              contentPadding: padding,
-          );
-        }
-    );*/
+
   }
 }
