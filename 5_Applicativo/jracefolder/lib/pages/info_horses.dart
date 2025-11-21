@@ -3,6 +3,7 @@ import 'package:like_button/like_button.dart';
 import 'package:provider/provider.dart';
 import '../data_provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import '../notifications.dart';
 
 class HorseDetailsPage extends StatefulWidget {
   const HorseDetailsPage({ super.key});
@@ -155,7 +156,6 @@ class HorseDetailPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-
                 isWide
                     ? Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -165,7 +165,10 @@ class HorseDetailPage extends StatelessWidget {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: Image.asset(
-                          'images/${horse["image"] ?? "default.png"}',
+                          'assets/images/${horse["image"] ?? "default.png"}',
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset('assets/images/default.png');
+                          },
                           height: 300,
                           fit: BoxFit.cover,
                         ),
@@ -183,12 +186,12 @@ class HorseDetailPage extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: Image.asset(
-                        'images/${horse["image"] ?? "default.png"}',
+                        'assets/images/${horse["image"] ?? "default.png"}',
                         height: 200,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Image.asset(
-                            "images/default.png",
+                            "assets/images/default.png",
                             height: 250,
                             fit: BoxFit.cover,
                           );
@@ -235,7 +238,9 @@ class HorseDetailPage extends StatelessWidget {
                         );
                         return fav;
                       }
-
+                      NotiService().showNotifications(title: "Notice", body: "Added horse to favorites");
+                      NotiService().scheduleNotification(id: 1, title: "Reminder", body: "You added a new favorite horse 1", hour: 14, minute: 25);
+                      NotiService().scheduleNotification(id: 2, title: "Reminder", body: "You added a new favorite horse 2", hour: 15, minute: 25);
                       if (fav) {
                         HorseDetailsPage.removeHorse(horse["id"]);
                       } else {
@@ -250,7 +255,6 @@ class HorseDetailPage extends StatelessWidget {
           );
         },
       ),
-
     );
   }
 

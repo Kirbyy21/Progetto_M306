@@ -7,18 +7,21 @@ import 'pages/info_horses.dart';
 import 'pages/race.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'theme.dart';
+import 'notifications.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   await Hive.openBox<int>('favorite_horses');
 
+  NotiService().initNotification();
+
   runApp(
     ChangeNotifierProvider(
       create: (_) => DataProvider(),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'J Race',
+        title: 'JRace',
         theme: raceTheme,
         home: MyApp(),
       ),

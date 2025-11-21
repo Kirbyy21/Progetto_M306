@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:jracefolder/pages/info_horses.dart';
 import 'package:provider/provider.dart';
 import '../data_provider.dart';
+import '../notifications.dart';
 
 class HomePage extends StatelessWidget {
   @override
@@ -46,7 +47,6 @@ class HomePage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // First ListView wrapped with Expanded
           Expanded(
             child: Card(
               child: ListView.builder(
@@ -67,7 +67,6 @@ class HomePage extends StatelessWidget {
               ),
             ),
           ),
-          // Second ListView wrapped with Expanded
           Expanded(
             child: Card(
               child: ListView.builder(
