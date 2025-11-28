@@ -174,11 +174,6 @@ class HorseDetailPage extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      flex: 2,
-                      child: _buildInfoCard(),
-                    )
                   ],
                 )
                     : Column(
@@ -198,8 +193,6 @@ class HorseDetailPage extends StatelessWidget {
                         },
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    _buildInfoCard(),
                   ],
                 ),
 
@@ -233,14 +226,17 @@ class HorseDetailPage extends StatelessWidget {
                     isLiked: HorseDetailsPage.isFavorite(horse["id"]),
                     onTap: (fav) async {
                       if (!fav && HorseDetailsPage.box.length >= 10) {
+                        // Popup max
+                        final messenger = ScaffoldMessenger.of(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text("You can have only 10 favorites!")),
                         );
                         return fav;
                       }
-                      NotiService().showNotifications(title: "Notice", body: "Added horse to favorites");
-                      NotiService().scheduleNotification(id: 1, title: "Reminder", body: "You added a new favorite horse 1", hour: 14, minute: 25);
-                      NotiService().scheduleNotification(id: 2, title: "Reminder", body: "You added a new favorite horse 2", hour: 15, minute: 25);
+                      // Controllo notifiche, progrmmate non funzionante
+                      //NotiService().showNotifications(title: "Notice", body: "Added horse to favorites");
+                      NotiService().scheduleNotification(id: 1, title: "Reminder", body: "You added a new favorite horse 1", hour: 14, minute:50);
+                      //NotiService().scheduleNotification(id: 2, title: "Reminder", body: "You added a new favorite horse 2", hour: 9, minute: 09);
                       if (fav) {
                         HorseDetailsPage.removeHorse(horse["id"]);
                       } else {
@@ -250,6 +246,8 @@ class HorseDetailPage extends StatelessWidget {
                     },
                   ),
                 ),
+                const SizedBox(height: 16),
+                _buildInfoCard(),
               ],
             ),
           );
@@ -277,10 +275,49 @@ class HorseDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text("Owner: ${horse["owner"] ?? "Unknown"}"),
+            Text("Trainer: ${horse["trainer"]  ?? "N/A"}"),
             Text("Sex: ${horse["sex"] ?? "N/A"}"),
             Text("Birth date: ${horse["birth_date"] ?? "N/A"}"),
             if (horse["alive"] == false)
               Text("Died: ${horse["death_date"] ?? "N/A"}"),
+            Text("Sire: ${horse["sire"]  ?? "N/A"}"),
+            Text("Dam: ${horse["dam"]  ?? "N/A"}"),
+            Text("Breeder: ${horse["breeder"]  ?? "N/A"}"),
+            Text("Earnings: ${horse["earnings_jpy"]  ?? "N/A"}"),
+
+            const SizedBox(height: 12),
+
+            // Major victories
+            if (horse["major_victories"] != null)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Major Victories:",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  for (var victory in horse["major_victories"])
+                    Text("- $victory"),
+                ],
+              ),
+
+            const SizedBox(height: 8),
+
+            // Titles and awards
+            if (horse["titles_and_awards"] != null)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Titles & Awards:",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  for (var title in horse["titles_and_awards"])
+                    Text("- $title"),
+                ],
+              ),
           ],
         ),
       ),
@@ -300,7 +337,7 @@ class HorseDetailPage extends StatelessWidget {
           Text(title,
               style:
               TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          Text("${value ?? 0}", style: TextStyle(color: Colors.white)),
+          Text("${value ?? "-"}", style: TextStyle(color: Colors.white)),
         ],
       ),
     );

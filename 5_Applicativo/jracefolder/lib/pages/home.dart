@@ -13,10 +13,6 @@ class HomePage extends StatelessWidget {
     final fhors = [];
     final upRaces = [];
     DateTime today = DateTime.now();
-    if (fav.isEmpty) {
-       return Text("No favorite Horses");
-    }
-    else {
       for (int i = 0; i < horses.length; i++) {
         final horse = horses[i];
         if (i == 0) {
@@ -26,14 +22,13 @@ class HomePage extends StatelessWidget {
           fhors.add(horse);
         }
       }
-    }
     for (int i = 0; i < races.length; i++) {
       final race = races[i];
       if (i == 0) {
         upRaces.add({"name": "Upcoming races this year:"});
       }
       DateTime date = DateTime.parse(race["date"]);
-      if (date.isAfter(today)) {
+      if (date.isAfter(today) && date.year == today.year) {
         upRaces.add(race);
       }
     }

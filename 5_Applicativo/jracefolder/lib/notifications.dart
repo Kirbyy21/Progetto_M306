@@ -67,8 +67,21 @@ class NotiService {
   }) async {
     final now = tz.TZDateTime.now(tz.local);
     var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute,);
+    print("Ora attuale: $now");
+    print("Notifica programmata per: $scheduledDate");
+    if (scheduledDate.isBefore(now)) {
+      print("Oh now");
+    }
 
+
+    final androidPlugin = AndroidFlutterLocalNotificationsPlugin();
+    final granted = await androidPlugin.requestExactAlarmsPermission();
+    if (granted != true) {
+      print("Access not granted!");
+      return;
+    }
     // Schedule
+    print("Schedulo notifica ID $id alle $scheduledDate");
     await notificationPlugin.zonedSchedule(
         id,
         title,
@@ -76,9 +89,12 @@ class NotiService {
         scheduledDate,
         notificationDetails(),
         // Andrioid spcific
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle, // exact
-        //matchDateTimeComponents: DateTimeComponents.time,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle, // exact
+        matchDateTimeComponents: DateTimeComponents.time,
+
     );
+    print("Notifica schedulata ✔");
+
   }
   
   Future<void> cancelAllNotifications() async {
