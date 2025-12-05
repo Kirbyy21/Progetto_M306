@@ -14,7 +14,7 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox<int>('favorite_horses');
 
-  NotiService().initNotification();
+  await NotiService().initNotification();
 
   runApp(
     ChangeNotifierProvider(

@@ -235,12 +235,14 @@ class HorseDetailPage extends StatelessWidget {
                       }
                       // Controllo notifiche, progrmmate non funzionante
                       //NotiService().showNotifications(title: "Notice", body: "Added horse to favorites");
-                      NotiService().scheduleNotification(id: 1, title: "Reminder", body: "You added a new favorite horse 1", hour: 14, minute:50);
-                      //NotiService().scheduleNotification(id: 2, title: "Reminder", body: "You added a new favorite horse 2", hour: 9, minute: 09);
+                      //NotiService().scheduleNotification(id: 2, title: "Reminder", body: "You added a new favorite horse 2", hour: 9, minute:32);
                       if (fav) {
                         HorseDetailsPage.removeHorse(horse["id"]);
-                      } else {
+                        //NotiService().scheduleNotification(id: 1000, title: "Reminder", body: "You added a new favorite horse 1", hour: 2, minute: 09);
+                      }
+                      else {
                         HorseDetailsPage.addHorse(horse["id"]);
+                        //NotiService().scheduleNotification(id: 20111, title: "Reminder", body: "You added a new favorite horse 1", hour: 14, minute: 09);
                       }
                       return !fav;
                     },

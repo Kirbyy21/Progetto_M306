@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:flutter_timezone/flutter_timezone.dart';
 
 class NotiService {
   final notificationPlugin = FlutterLocalNotificationsPlugin();
@@ -17,22 +17,26 @@ class NotiService {
 
     //timezone handling
     tz.initializeTimeZones();
+    /*final String currentTimeZone = DateTime.now().timeZoneName;
+    tz.setLocalLocation(tz.getLocation(currentTimeZone));*/
+
     final timezoneInfo = await FlutterTimezone.getLocalTimezone();
     final String currentTimeZone = timezoneInfo.identifier;
-    tz.setLocalLocation(tz.getLocation(currentTimeZone));
-    
+    tz.setLocalLocation(tz.getLocation('Europe/Lisbon'));
+
+
     // android init settings
-    const initSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const AndroidInitializationSettings initSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
 
     // init settings
-    const initSettings = InitializationSettings(
+    const InitializationSettings initSettings = InitializationSettings(
       android:  initSettingsAndroid,
     );
 
     // plugin
     await notificationPlugin.initialize(initSettings);
 
-    //_isInitialzed = true;
+    _isInitialzed = true;
   }
 
   // Notification setup
@@ -57,6 +61,7 @@ class NotiService {
       return notificationPlugin.show(id, title, body, notificationDetails(),);
   }
 
+
   // Schedule notification
   Future<void> scheduleNotification({
     required int id,
@@ -66,12 +71,21 @@ class NotiService {
     required int minute,
   }) async {
     final now = tz.TZDateTime.now(tz.local);
-    var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute,);
+
+    var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
     print("Ora attuale: $now");
     print("Notifica programmata per: $scheduledDate");
     if (scheduledDate.isBefore(now)) {
       print("Oh now");
     }
+  /*
+    final androidPlugin = AndroidFlutterLocalNotificationsPlugin();
+    final granted = await androidPlugin?.requestExactAlarmsPermission();
+    if (granted != true) return;
+    final allowed = await androidPlugin?.areNotificationsEnabled();
+    if (allowed == false) {
+      await androidPlugin?.requestNotificationsPermission();
+    }*/
 
 
     final androidPlugin = AndroidFlutterLocalNotificationsPlugin();
@@ -82,21 +96,24 @@ class NotiService {
     }
     // Schedule
     print("Schedulo notifica ID $id alle $scheduledDate");
-    await notificationPlugin.zonedSchedule(
+    return notificationPlugin.zonedSchedule(
         id,
         title,
         body,
         scheduledDate,
         notificationDetails(),
-        // Andrioid spcific
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle, // exact
-        matchDateTimeComponents: DateTimeComponents.time,
-
+        // Android specific
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle, // exact
+        //matchDateTimeComponents: DateTimeComponents.time,
     );
     print("Notifica schedulata ✔");
+    print("TZDateTime: $scheduledDate");
+    print("Milliseconds since epoch: ${scheduledDate.millisecondsSinceEpoch}");
+    print("Now: ${tz.TZDateTime.now(tz.local)}");
+
 
   }
-  
+
   Future<void> cancelAllNotifications() async {
     await notificationPlugin.cancelAll();
   }
