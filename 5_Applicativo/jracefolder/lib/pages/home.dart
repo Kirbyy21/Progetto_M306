@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:jracefolder/pages/info_horses.dart';
 import 'package:provider/provider.dart';
 import '../data_provider.dart';
-import '../notifications.dart';
 
+// Pagina home
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -40,54 +40,57 @@ class HomePage extends StatelessWidget {
         title: Text("Home", style: TextStyle(color: Colors.white)),
         backgroundColor: Color(0xFF149109),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Card(
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Card(
+              margin: EdgeInsets.all(8),
               child: ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
                 itemCount: upRaces.length,
                 itemBuilder: (context, index) {
                   final race = upRaces[index];
-                  return ListTile(
-                    title: Text(
-                      race["name"],
+                  return Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: Text(
+                      "${race["name"]}${race["date"] != null ? '\n${race["date"]}' : ''}",
                       style: TextStyle(
                         fontWeight: index == 0 ? FontWeight.bold : FontWeight.normal,
                         fontSize: index == 0 ? 18 : 16,
                       ),
                     ),
-                    subtitle: Text(index == 0 ? "" : race["date"]),
                   );
                 },
               ),
             ),
-          ),
-          Expanded(
-            child: Card(
+            Card(
+              margin: EdgeInsets.all(8),
               child: ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
                 itemCount: fhors.length,
                 itemBuilder: (context, index) {
                   final horse = fhors[index];
-                  final padding = EdgeInsets.only(
-                    left: 16,
-                    bottom: index == 0 ? 8 : 0,
-                  );
-                  return ListTile(
-                    title: Text(
+                  return Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: Text(
                       horse["name"],
                       style: TextStyle(
                         fontWeight: index == 0 ? FontWeight.bold : FontWeight.normal,
                         fontSize: index == 0 ? 18 : 16,
                       ),
                     ),
-                    contentPadding: padding,
                   );
                 },
+
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+
     );
 
   }

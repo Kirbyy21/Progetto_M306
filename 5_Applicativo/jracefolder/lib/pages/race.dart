@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../data_provider.dart';
 
+// Pagina per visualizzare le corse
 class RacePage extends StatelessWidget {
   const RacePage({super.key});
   @override
@@ -53,6 +54,7 @@ class RacePage extends StatelessWidget {
   }
 }
 
+// Pagina per visulizzare le corse passate
 class RaceDetailPage extends StatelessWidget {
   const RaceDetailPage({super.key, required this.race});
   final Map<String, dynamic> race;

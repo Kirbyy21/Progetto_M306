@@ -7,14 +7,16 @@ import 'pages/info_horses.dart';
 import 'pages/race.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'theme.dart';
-import 'notifications.dart';
+import 'package:calendar_event_linker/calendar_event_linker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Prende i cavalli preferiti (se ci sono)
   await Hive.initFlutter();
   await Hive.openBox<int>('favorite_horses');
 
-  await NotiService().initNotification();
+  //await NotiService().initNotification();
 
   runApp(
     ChangeNotifierProvider(
@@ -40,14 +42,48 @@ class _MainPageState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    final dataProvider = Provider.of<DataProvider>(context, listen: false);
-    dataProvider.fetchData();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final dataProvider = Provider.of<DataProvider>(context, listen: false);
+      await dataProvider.fetchData();
+      final permission = await Permission.calendarFullAccess.request();
+      if (permission.isGranted) {
+        createEventCalendar(dataProvider.races);
+      }
+    });
   }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  Future<void> createEventCalendar(final races) async {
+    final calendarEventLinker = CalendarEventLinker();
+    DateTime today = DateTime.now();
+    for (var race in races) {
+      DateTime date = DateTime.parse(race["date"]);
+      if ((date.isAtSameMomentAs(today) || date.isAfter(today)) && date.year >= today.year) {
+        try {
+          final eventId = await calendarEventLinker.addEventToCalendar(
+            title: '${race["date"]} Race Day',
+            description: 'Today is ${race["name"]} race day',
+            startTime: DateTime(date.year, date.month, date.day, 7, 0),
+            endTime: DateTime(date.year, date.month, date.day, 8, 0),
+          );
+
+          if (eventId != null) {
+            print('Event added successfully with ID: $eventId');
+          }
+          else {
+            print('Failed to add event');
+          }
+        }
+        catch (e) {
+          print('Error adding event for ${race["name"]} on ${race["date"]}: $e');
+        }
+      }
+    }
   }
 
   @override

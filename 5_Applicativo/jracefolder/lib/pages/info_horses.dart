@@ -3,26 +3,33 @@ import 'package:like_button/like_button.dart';
 import 'package:provider/provider.dart';
 import '../data_provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../notifications.dart';
 
+// Pagina per mostrare la lista dei cavalli
+// Widget con dati presenti che cambiano
 class HorseDetailsPage extends StatefulWidget {
-  const HorseDetailsPage({ super.key});
+  const HorseDetailsPage({super.key});
 
   static final Box<int> box = Hive.box<int>('favorite_horses');
 
+  // Metodo per prendere i cavalli preferiti
   static List<int> getAll() {
     return box.keys.cast<int>().toList();
   }
 
+  // Controlla se il cavallo fornito è nei preferiti
   static bool isFavorite(int id) {
     return box.containsKey(id);
   }
+
+  // Aggiunge il cavallo fornito ai preferiti se non sono 10
   static void addHorse(int id) {
     if (box.length >= 10) return;
     if (!box.containsKey(id)) {
       box.put(id, id);
     }
   }
+
+  // Rimuove il cavallo fornito dai preferiti
   static void removeHorse(int id) {
     box.delete(id);
   }
@@ -31,6 +38,7 @@ class HorseDetailsPage extends StatefulWidget {
   State<HorseDetailsPage> createState() => _HorsePageSate();
 }
 
+// Widget dinamico, cambia quando vinene chiamato setState()
 class _HorsePageSate extends State<HorseDetailsPage> {
   List<dynamic> displayData = [];
   List<dynamic> allData = [];
@@ -40,6 +48,7 @@ class _HorsePageSate extends State<HorseDetailsPage> {
   Widget build(BuildContext context) {
     final data = Provider.of<DataProvider>(context, listen: false).horses;
 
+    // Ordina i cavalli in ordine alfabetico prioritando i preferiti
     void sortData() {
       setState(() {
         displayData.sort((a, b) {
@@ -66,6 +75,8 @@ class _HorsePageSate extends State<HorseDetailsPage> {
       sortData();
     }
 
+    // Ricerca i cavalli in base alla striga fornita (maiuscole irrilevanti)
+    // Cambia i dati visualizzati ogni volta che cambia la stringa
     void filterData(String query) {
       setState(() {
         String schQuery = query.toLowerCase();
@@ -132,9 +143,11 @@ class _HorsePageSate extends State<HorseDetailsPage> {
   }
 }
 
+// Pagina per mostrare le informazioni su un cavallo
 class HorseDetailPage extends StatelessWidget {
   const HorseDetailPage({super.key, required this.horse});
 
+  // Mappa per i colori
   final Map<String, Color> colorMap = const {
     'g1': Color(0xFFFFD700),
     'g2': Color(0xFFC0C0C0),
@@ -150,6 +163,8 @@ class HorseDetailPage extends StatelessWidget {
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth > 900;
+
+          bool snackBarActive = false;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -226,14 +241,18 @@ class HorseDetailPage extends StatelessWidget {
                     isLiked: HorseDetailsPage.isFavorite(horse["id"]),
                     onTap: (fav) async {
                       if (!fav && HorseDetailsPage.box.length >= 10) {
-                        // Popup max
-                        final messenger = ScaffoldMessenger.of(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("You can have only 10 favorites!")),
-                        );
+                        if (!snackBarActive) {
+                          snackBarActive = true;
+                          final messenger = ScaffoldMessenger.of(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("You can have only 10 favorites!")),
+                          ).closed.then((_) {
+                            snackBarActive = false;
+                          });
+                        }
                         return fav;
                       }
-                      // Controllo notifiche, progrmmate non funzionante
+                      // Controllo notifiche, programmate non funzionanti
                       //NotiService().showNotifications(title: "Notice", body: "Added horse to favorites");
                       //NotiService().scheduleNotification(id: 2, title: "Reminder", body: "You added a new favorite horse 2", hour: 9, minute:32);
                       if (fav) {
