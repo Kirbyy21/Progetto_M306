@@ -45,7 +45,9 @@ class _MainPageState extends State<MyApp> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final dataProvider = Provider.of<DataProvider>(context, listen: false);
       await dataProvider.fetchData();
+      // Richiede il permesso di accedere al calendario di sistema
       final permission = await Permission.calendarFullAccess.request();
+      // Se è stato permesso aggiunge gli eventi
       if (permission.isGranted) {
         createEventCalendar(dataProvider.races);
       }
@@ -58,13 +60,17 @@ class _MainPageState extends State<MyApp> {
     });
   }
 
+  // Metodo per aggiungere gli eventi sul calendario
   Future<void> createEventCalendar(final races) async {
     final calendarEventLinker = CalendarEventLinker();
     DateTime today = DateTime.now();
     for (var race in races) {
+      // Converte la data della gara da stringa a DateTime
       DateTime date = DateTime.parse(race["date"]);
+      // Controlla se della corsa è oggi o in futuro
       if ((date.isAtSameMomentAs(today) || date.isAfter(today)) && date.year >= today.year) {
         try {
+          // Aggiunge l'evento al calendario
           final eventId = await calendarEventLinker.addEventToCalendar(
             title: '${race["date"]} Race Day',
             description: 'Today is ${race["name"]} race day',
@@ -72,6 +78,7 @@ class _MainPageState extends State<MyApp> {
             endTime: DateTime(date.year, date.month, date.day, 8, 0),
           );
 
+          // Verifica se l’evento è stato aggiunto correttamente
           if (eventId != null) {
             print('Event added successfully with ID: $eventId');
           }
@@ -88,6 +95,7 @@ class _MainPageState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    // Recupera il DataProvider per accedere ai dati condivisi
     final dataProvider = Provider.of<DataProvider>(context);
     // Mostra caricamento finché i dati non sono pronti
     if (!dataProvider.isLoaded) {
@@ -96,6 +104,7 @@ class _MainPageState extends State<MyApp> {
       );
     }
 
+    // Lista delle pagine dell'applicazione
     final List<Widget> _pages = [
       HomePage(),
       CalendarPage(),
@@ -103,14 +112,17 @@ class _MainPageState extends State<MyApp> {
       HorseDetailsPage(),
     ];
 
+    // Struttura principale della schermata
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
         children: _pages,
       ),
+      // Barra di navigazione inferiore
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
+        // Cliccando cambia la pagina selezionata
         onTap: _onItemTapped,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),

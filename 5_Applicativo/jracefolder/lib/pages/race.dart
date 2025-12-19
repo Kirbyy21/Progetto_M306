@@ -12,7 +12,6 @@ class RacePage extends StatelessWidget {
       return Center(child: CircularProgressIndicator());
     }
     final uniqueRaces = <String, Map<String, dynamic>>{};
-
     for (var race in data) {
       final name = race['name'] ?? '';
       if (!uniqueRaces.containsKey(name)) {
